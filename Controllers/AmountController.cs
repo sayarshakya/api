@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Models.Data;
 using Microsoft.AspNetCore.Mvc;
+using api.Dtos.Amount;
+using api.Mappers;
 
 namespace api.Controllers
 {
@@ -20,7 +22,8 @@ namespace api.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var amounts = _context.Amount.ToList();
+            var amounts = _context.Amount.ToList()
+            .Select(s => s.ToAmountDto());
             return Ok(amounts);
         }
 
@@ -34,6 +37,15 @@ namespace api.Controllers
             }
 
             return Ok(amount);
+        }
+
+        [HttpPost]
+        public IActionResult Create([FromBody] CreateAmountRequestDto amountDto)
+        {
+            var amountModel = amountDto.ToAmountFromCreateDTO();
+            _context.Amount.Add(amountModel);
+            _context.SaveChanges();
+            return CreatedAtAction(nameof(GetById), new {id = amountModel.Id}, amountModel.ToAmountDto());
         }
     }
 }
