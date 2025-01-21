@@ -47,5 +47,19 @@ namespace api.Controllers
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetById), new {id = amountModel.Id}, amountModel.ToAmountDto());
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete([FromRoute] int id)
+        {
+            var amountModel = _context.Amount.FirstOrDefault(x => x.Id == id);
+            if(amountModel == null)
+            {
+                return NotFound();
+            }
+            _context.Amount.Remove(amountModel);
+            _context.SaveChanges();
+            return NoContent();
+        }
     }
 }
