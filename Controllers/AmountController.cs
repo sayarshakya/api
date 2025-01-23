@@ -6,6 +6,8 @@ using api.Models.Data;
 using Microsoft.AspNetCore.Mvc;
 using api.Dtos.Amount;
 using api.Mappers;
+using Microsoft.EntityFrameworkCore;
+using api.Interfaces;
 
 namespace api.Controllers
 {
@@ -14,23 +16,25 @@ namespace api.Controllers
     public class AmountController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
-        public AmountController(ApplicationDBContext context)
+        private readonly IAmountRepository _amountRepository;
+        public AmountController(ApplicationDBContext context, IAmountRepository amountRepository)
         {
             _context = context;
+            _amountRepository = amountRepository;
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var amounts = _context.Amount.ToList()
-            .Select(s => s.ToAmountDto());
-            return Ok(amounts);
+            var amounts = await _amountRepository.GetAllAsync();
+            var amountDto = amounts.Select(s => s.ToAmountDto());
+            return Ok(amountDto);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var amount = _context.Amount.Find(id);
+            var amount = await _amountRepository.GetByIdAsync(id);
             if(amount == null)
             {
                 return NotFound();
@@ -40,25 +44,38 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateAmountRequestDto amountDto)
+        public async Task<IActionResult> Create([FromBody] CreateAmountRequestDto amountDto)
         {
             var amountModel = amountDto.ToAmountFromCreateDTO();
-            _context.Amount.Add(amountModel);
-            _context.SaveChanges();
+            await _amountRepository.CreateAsync(amountModel);
             return CreatedAtAction(nameof(GetById), new {id = amountModel.Id}, amountModel.ToAmountDto());
         }
 
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateAmountRequestDto amountDto)
+        {
+
+            var amountModel = await _amountRepository.UpdateAsync(id, amountDto);
+
+            if (amountModel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(amountModel.ToAmountDto());
+        }
+
+
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var amountModel = _context.Amount.FirstOrDefault(x => x.Id == id);
+            var amountModel = await _amountRepository.DeleteAsync(id);
             if(amountModel == null)
             {
                 return NotFound();
             }
-            _context.Amount.Remove(amountModel);
-            _context.SaveChanges();
             return NoContent();
         }
     }
