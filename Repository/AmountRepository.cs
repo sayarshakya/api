@@ -1,7 +1,8 @@
-﻿using api.Dtos.Amount;
+﻿using api.Data;
+using api.Dtos.Amount;
+using api.Helpers;
 using api.Interfaces;
 using api.Models;
-using api.Models.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Repository
