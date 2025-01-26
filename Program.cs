@@ -84,6 +84,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IAmountRepository, AmountRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IMonthlyDepositRepository, MontlyDepositRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
